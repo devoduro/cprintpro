@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AcademicYear;
-use App\Models\Classification;
-use App\Models\GradeScheme;
-use App\Models\Semester;
+use App\Models\User;
+use App\Models\Document;
+use App\Models\DocumentCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Artisan;
 
 class SettingController extends Controller
 {
@@ -18,384 +19,70 @@ class SettingController extends Controller
      */
     public function index()
     {
-        $academicYears = AcademicYear::all();
-        $gradeSchemes = GradeScheme::all();
-        $classifications = Classification::all();
+        // System statistics for settings overview
+        $systemStats = [
+            'total_users' => User::count(),
+            'total_documents' => Document::count(),
+            'total_categories' => DocumentCategory::count(),
+            'total_storage_mb' => round(Document::sum('file_size') / 1024 / 1024, 2),
+            'total_prints' => Document::sum('print_count'),
+            'active_documents' => Document::where('is_active', true)->count(),
+            'active_categories' => DocumentCategory::where('is_active', true)->count(),
+        ];
+
+        // Storage usage by category
+        $categoryStorage = DocumentCategory::withSum('documents', 'file_size')
+            ->having('documents_sum_file_size', '>', 0)
+            ->orderByDesc('documents_sum_file_size')
+            ->take(10)
+            ->get()
+            ->map(function ($category) {
+                return [
+                    'name' => $category->name,
+                    'size_mb' => round(($category->documents_sum_file_size ?? 0) / 1024 / 1024, 2),
+                    'color' => $category->color,
+                    'icon' => $category->icon
+                ];
+            });
+
+        // Recent system activities for monitoring
+        $recentActivities = collect([
+            [
+                'type' => 'system_info',
+                'message' => 'System cache size: ' . $this->getCacheSize(),
+                'time' => now()->subMinutes(5)->diffForHumans(),
+                'icon' => 'fas fa-server',
+                'color' => 'text-blue-600'
+            ],
+            [
+                'type' => 'storage_info',
+                'message' => 'Total storage used: ' . $systemStats['total_storage_mb'] . ' MB',
+                'time' => now()->subMinutes(10)->diffForHumans(),
+                'icon' => 'fas fa-hdd',
+                'color' => 'text-orange-600'
+            ]
+        ]);
         
-        return view('settings.index', compact('academicYears', 'gradeSchemes', 'classifications'));
+        return view('settings.index', compact('systemStats', 'categoryStorage', 'recentActivities'));
+    }
+
+    /**
+     * Get cache size information
+     */
+    private function getCacheSize()
+    {
+        try {
+            $cacheSize = Cache::get('system_cache_size', '0 MB');
+            return $cacheSize;
+        } catch (\Exception $e) {
+            return 'Unknown';
+        }
     }
     
     /**
      * Display academic years settings.
      */
-    public function academicYears()
-    {
-        $academicYears = AcademicYear::orderBy('start_date', 'desc')->get();
-        return view('settings.academic_years.index', compact('academicYears'));
-    }
-    
-    /**
-     * Display grade schemes settings.
-     */
-    public function gradeSchemes()
-    {
-        $gradeSchemes = GradeScheme::all();
-        return view('settings.grade_schemes', compact('gradeSchemes'));
-    }
-    
-    /**
-     * Display classifications settings.
-     */
-    public function classifications()
-    {
-        $classifications = Classification::orderBy('min_cgpa', 'desc')->get();
-        return view('settings.classifications', compact('classifications'));
-    }
-
-    /**
-     * Show the form for creating a new academic year.
-     */
-    public function createAcademicYear()
-    {
-        $existingYears = AcademicYear::pluck('name')->toArray();
-        return view('settings.academic_years.create', compact('existingYears'));
-    }
-
-    /**
-     * Store a newly created academic year.
-     */
-    public function storeAcademicYear(Request $request)
-    {
-        // Prepare data with explicit boolean casting for is_current
-        $data = $request->all();
-        $data['is_current'] = $request->has('is_current') ? true : false;
-
-        // Validate academic year data
-        $validator = Validator::make($data, [
-            'name' => 'required|string|max:255|unique:academic_years,name',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'is_current' => 'boolean',
-            'semesters' => 'required|array|min:1',
-            'semesters.*.semester_number' => 'required|integer|min:1',
-            'semesters.*.name' => 'required|string|max:255',
-            'semesters.*.start_date' => 'required|date',
-            'semesters.*.end_date' => 'required|date|after:semesters.*.start_date',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->route('settings.academic-years.create')
-                ->withErrors($validator)
-                ->withInput();
-        }
-        
-        // Start database transaction
-        DB::beginTransaction();
-        
-        try {
-            // If this is set as current, unset all others
-            if ($data['is_current']) {
-                AcademicYear::where('is_current', true)->update(['is_current' => false]);
-            }
-            
-            // Create academic year
-            $academicYear = AcademicYear::create([
-                'name' => $data['name'],
-                'start_date' => $data['start_date'],
-                'end_date' => $data['end_date'],
-                'is_current' => $data['is_current'],
-            ]);
-            
-            // Create semesters
-            if (!empty($data['semesters']) && is_array($data['semesters'])) {
-                foreach ($data['semesters'] as $semesterData) {
-                    // Skip if any required field is missing
-                    if (!isset($semesterData['semester_number'], $semesterData['name'], 
-                             $semesterData['start_date'], $semesterData['end_date'])) {
-                        continue;
-                    }
-                    
-                    // Create semester with explicit data
-                    $semester = new Semester([
-                        'semester_number' => $semesterData['semester_number'],
-                        'name' => $semesterData['name'],
-                        'start_date' => $semesterData['start_date'],
-                        'end_date' => $semesterData['end_date'],
-                        'is_current' => false, // Default to false
-                    ]);
-                    
-                    $academicYear->semesters()->save($semester);
-                }
-            }
-            
-            // If no semesters were created, rollback
-            if ($academicYear->semesters()->count() === 0) {
-                DB::rollBack();
-                return redirect()->route('settings.academic-years.create')
-                    ->withInput()
-                    ->with('error', 'At least one semester is required.');
-            }
-            
-            DB::commit();
-            
-            return redirect()->route('settings.academic-years')
-                ->with('success', 'Academic year and semesters created successfully.');
-                
-        } catch (\Exception $e) {
-            DB::rollBack();
-            
-            return redirect()->route('settings.academic-years.create')
-                ->withInput()
-                ->with('error', 'Failed to create academic year: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Show the form for creating a new grade scheme.
-     */
-    public function createGradeScheme()
-    {
-        return view('settings.grade_schemes.create');
-    }
-
-    /**
-     * Store a newly created grade scheme.
-     */
-    public function storeGradeScheme(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'is_default' => 'boolean',
-            'grades' => 'required|array|min:1',
-            'grades.*.letter' => 'required|string|max:5',
-            'grades.*.min_score' => 'required|numeric|min:0|max:100',
-            'grades.*.gpa_value' => 'required|numeric|min:0|max:5',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->route('settings.grade-schemes.create')
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        DB::beginTransaction();
-        try {
-            $gradeScheme = GradeScheme::create([
-                'name' => $request->name,
-                'description' => $request->description,
-                'is_default' => $request->boolean('is_default', false),
-            ]);
-
-            // If this is set as default, remove default from others
-            if ($gradeScheme->is_default) {
-                GradeScheme::where('id', '!=', $gradeScheme->id)
-                    ->where('is_default', true)
-                    ->update(['is_default' => false]);
-            }
-
-            // Create grades
-            $grades = collect($request->grades)->map(function ($grade) {
-                return [
-                    'letter' => $grade['letter'],
-                    'min_score' => $grade['min_score'],
-                    'gpa_value' => $grade['gpa_value'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            })->toArray();
-
-            $gradeScheme->grades()->createMany($grades);
-
-            DB::commit();
-            return redirect()->route('settings.grade-schemes')
-                ->with('success', 'Grade scheme created successfully.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->route('settings.grade-schemes.create')
-                ->with('error', 'Failed to create grade scheme. ' . $e->getMessage())
-                ->withInput();
-        }
-    }
-
-    /**
-     * Show the form for creating a new classification.
-     */
-    public function createClassification()
-    {
-        return view('settings.classifications.create');
-    }
-
-    /**
-     * Store a newly created classification.
-     */
-    public function storeClassification(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:classifications,name',
-            'min_cgpa' => 'required|numeric|min:0|max:4',
-            'max_cgpa' => 'required|numeric|min:0|max:4|gte:min_cgpa',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->route('settings.classifications.create')
-                ->withErrors($validator)
-                ->withInput();
-        }
-        
-        Classification::create($request->all());
-        
-        return redirect()->route('settings.index')
-            ->with('success', 'Classification created successfully.');
-    }
-    
-    /**
-     * Edit an academic year.
-     */
-    public function editAcademicYear(string $id)
-    {
-        $academicYear = AcademicYear::findOrFail($id);
-        return view('settings.academic_years.edit', compact('academicYear'));
-    }
-    
-    /**
-     * Update an academic year.
-     */
-    public function updateAcademicYear(Request $request, string $id)
-    {
-        $academicYear = AcademicYear::findOrFail($id);
-        
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:academic_years,name,' . $id,
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'is_current' => 'boolean',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->route('settings.academic-years.edit', $id)
-                ->withErrors($validator)
-                ->withInput();
-        }
-        
-        // If this is set as current, unset all others
-        if ($request->has('is_current') && $request->input('is_current')) {
-            AcademicYear::where('is_current', true)->update(['is_current' => false]);
-        }
-        
-        $academicYear->update($request->all());
-        
-        return redirect()->route('settings.index')
-            ->with('success', 'Academic year updated successfully.');
-    }
-    
-    /**
-     * Edit a grade scheme.
-     */
-    public function editGradeScheme(string $id)
-    {
-        $gradeScheme = GradeScheme::findOrFail($id);
-        return view('settings.grade_schemes.edit', compact('gradeScheme'));
-    }
-    
-    /**
-     * Update a grade scheme.
-     */
-    public function updateGradeScheme(Request $request, string $id)
-    {
-        $gradeScheme = GradeScheme::findOrFail($id);
-        
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'is_default' => 'boolean',
-            'grades' => 'required|array|min:1',
-            'grades.*.letter' => 'required|string|max:5',
-            'grades.*.min_score' => 'required|numeric|min:0|max:100',
-            'grades.*.gpa_value' => 'required|numeric|min:0|max:5',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->route('settings.grade-schemes.edit', $id)
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        DB::beginTransaction();
-        try {
-            $gradeScheme->update([
-                'name' => $request->name,
-                'description' => $request->description,
-                'is_default' => $request->boolean('is_default', false),
-            ]);
-
-            // If this is set as default, remove default from others
-            if ($gradeScheme->is_default) {
-                GradeScheme::where('id', '!=', $gradeScheme->id)
-                    ->where('is_default', true)
-                    ->update(['is_default' => false]);
-            }
-
-            // Delete existing grades
-            $gradeScheme->grades()->delete();
-
-            // Create new grades
-            $grades = collect($request->grades)->map(function ($grade) {
-                return [
-                    'letter' => $grade['letter'],
-                    'min_score' => $grade['min_score'],
-                    'gpa_value' => $grade['gpa_value'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            })->toArray();
-
-            $gradeScheme->grades()->createMany($grades);
-
-            DB::commit();
-            return redirect()->route('settings.grade-schemes')
-                ->with('success', 'Grade scheme updated successfully.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->route('settings.grade-schemes.edit', $id)
-                ->with('error', 'Failed to update grade scheme. ' . $e->getMessage())
-                ->withInput();
-        }
-    }
-    
-    /**
-     * Edit a classification.
-     */
-    public function editClassification(string $id)
-    {
-        $classification = Classification::findOrFail($id);
-        return view('settings.classifications.edit', compact('classification'));
-    }
-    
-    /**
-     * Update a classification.
-     */
-    public function updateClassification(Request $request, string $id)
-    {
-        $classification = Classification::findOrFail($id);
-        
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:classifications,name,' . $id,
-            'min_cgpa' => 'required|numeric|min:0|max:4',
-            'max_cgpa' => 'required|numeric|min:0|max:4|gte:min_cgpa',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->route('settings.classifications.edit', $id)
-                ->withErrors($validator)
-                ->withInput();
-        }
-        
-        $classification->update($request->all());
-        
-        return redirect()->route('settings.index')
-            ->with('success', 'Classification updated successfully.');
-    }
+   
     
     /**
      * Delete an academic year.

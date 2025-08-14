@@ -1,15 +1,15 @@
-Act as a senior software developer. Using the attached documentation as your primary reference, design and develop a modern, TRANSCRIPT SYSTEM FOR A COLLEGE System strictly for use by COLLEGE administrators and students. Adhere to best coding practices, including clean architecture, modular structure, and reusable components.
+Act as a senior software developer. Using the attached documentation as your primary reference, design and develop a modern, Printer System FOR A COLLEGE System strictly for use by COLLEGE administrators and students. Adhere to best coding practices, including clean architecture, modular structure, and reusable components.
 Build the basic structure of the application first.
 
   you can use the already existing database migration files, models, seeders and controllers, and web routes
 
 ✅ SYSTEM OVERVIEW:
-Create a full-featured Transcript Management System that enables the admin to manage student academic records, including personal details, academic results by semester, and transcript generation. The admin must be able to upload bulk transcripts via Excel and generate downloadable PDFs for each student.
+Create a full-featured Print Management System that enables the admin to manage student academic records, including personal details, academic results by semester, and Print generation. The admin must be able to upload bulk transcripts via Excel and generate downloadable PDFs for each student.
 
 Menu Structure
 1. Dashboard
 2. STUDENTS
-3. TRANSCRIPT
+3. Print
 4. UPLOAD
 5. Report
 6. Settings

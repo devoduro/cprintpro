@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Transcript System') }}</title>
+    <title>{{ config('app.name', 'Printer System') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -272,7 +272,7 @@
                 @else
                     <div class="py-2 mt-1">
                         <h1 class="text-2xl font-bold text-gray-800">@yield('title', 'Dashboard')</h1>
-                        <p class="text-sm text-gray-500">@yield('subtitle', 'Welcome to the Transcript Management System')</p>
+                        <p class="text-sm text-gray-500">@yield('subtitle', 'Welcome to the Print Management System')</p>
                     </div>
                 @endif
                 
@@ -288,7 +288,7 @@
             <footer class="py-4 px-6 border-t border-gray-200">
                 <div class="flex flex-col md:flex-row justify-between items-center">
                     <p class="text-sm text-gray-500">
-                        &copy; {{ date('Y') }} Transcript Management System. All rights reserved.
+                        &copy; {{ date('Y') }} Print Management System. All rights reserved.
                     </p>
                     <div class="mt-2 md:mt-0">
                         <a href="#" class="text-sm text-gray-500 hover:text-primary-600 mr-4">Privacy Policy</a>

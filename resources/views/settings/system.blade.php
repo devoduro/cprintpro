@@ -7,7 +7,7 @@
 <div class="bg-white rounded-lg shadow-sm p-6">
     <div class="mb-6">
         <h2 class="text-xl font-bold text-gray-800 mb-2">System Settings</h2>
-        <p class="text-gray-600">Configure general system settings and preferences for the transcript management system.</p>
+        <p class="text-gray-600">Configure general system settings and preferences for the Print management system.</p>
     </div>
 
     @if(session('success'))
@@ -54,19 +54,19 @@
             </div>
         </div>
 
-        <!-- Transcript Settings -->
+        <!-- Print Settings -->
         <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Transcript Settings</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Print Settings</h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label for="transcript_prefix" class="block text-sm font-medium text-gray-700 mb-1">Transcript Number Prefix</label>
+                    <label for="transcript_prefix" class="block text-sm font-medium text-gray-700 mb-1">Print Number Prefix</label>
                     <input type="text" name="transcript_prefix" id="transcript_prefix" value="{{ $settings->where('key', 'transcript_prefix')->first()->value ?? old('transcript_prefix') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-50">
-                    <p class="mt-1 text-xs text-gray-500">Prefix for transcript numbers (e.g., TR-)</p>
+                    <p class="mt-1 text-xs text-gray-500">Prefix for Print numbers (e.g., TR-)</p>
                 </div>
                 
                 <div>
-                    <label for="transcript_footer" class="block text-sm font-medium text-gray-700 mb-1">Transcript Footer Text</label>
+                    <label for="transcript_footer" class="block text-sm font-medium text-gray-700 mb-1">Print Footer Text</label>
                     <input type="text" name="transcript_footer" id="transcript_footer" value="{{ $settings->where('key', 'transcript_footer')->first()->value ?? old('transcript_footer') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-50">
                 </div>
                 
