@@ -195,9 +195,8 @@ class DocumentController extends Controller
 
         $document->incrementPrintCount();
 
-        // In a real application, you would integrate with a print service here
-        // For now, we'll just redirect to the file for viewing/printing
-        return redirect($document->file_url)->with('success', 'Document prepared for printing.');
+        // Return a print view that opens the document in a new window for printing
+        return view('documents.print', compact('document'));
     }
 
     /**
