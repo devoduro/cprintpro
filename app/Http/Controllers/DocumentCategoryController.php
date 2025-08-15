@@ -66,14 +66,21 @@ class DocumentCategoryController extends Controller
 
         $validated['is_active'] = $request->has('is_active');
         $validated['sort_order'] = $validated['sort_order'] ?? 0;
+        
+        // Ensure parent_id is always set to avoid undefined key errors
+        if (!array_key_exists('parent_id', $validated)) {
+            $validated['parent_id'] = null;
+        }
 
         $category = DocumentCategory::create($validated);
         
         // Update path after creation
         $category->updatePath();
 
-        $redirectUrl = $validated['parent_id'] 
-            ? route('document-categories.index', ['parent' => $validated['parent_id']])
+        // Safe access to parent_id for redirect
+        $parentId = isset($validated['parent_id']) ? $validated['parent_id'] : null;
+        $redirectUrl = $parentId
+            ? route('document-categories.index', ['parent' => $parentId])
             : route('document-categories.index');
 
         return redirect($redirectUrl)
