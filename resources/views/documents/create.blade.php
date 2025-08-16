@@ -82,7 +82,7 @@
                         required>
                     <option value="">Select a category</option>
                     @foreach($categories as $category)
-                        <option value="{{ $category->id }}" {{ old('document_category_id') == $category->id ? 'selected' : '' }}>
+                        <option value="{{ $category->id }}" {{ (old('document_category_id') == $category->id || ($selectedCategory && $selectedCategory->id == $category->id && !old('document_category_id'))) ? 'selected' : '' }}>
                             {{ $category->name }}
                         </option>
                     @endforeach

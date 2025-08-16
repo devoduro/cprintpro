@@ -20,7 +20,11 @@ class DocumentCategoryController extends Controller
     public function index(Request $request)
     {
         $parentId = $request->get('parent');
-        $parent = $parentId ? DocumentCategory::findOrFail($parentId) : null;
+        $parent = $parentId ? DocumentCategory::with([
+            'documents' => function($query) {
+                $query->active()->latest();
+            }
+        ])->findOrFail($parentId) : null;
         
         $query = DocumentCategory::withCount('documents')
             ->with(['parent', 'children']);
