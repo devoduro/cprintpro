@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DocumentCategoryController extends Controller
 {
+
     public function __construct()
     {
         $this->middleware('auth');
