@@ -165,43 +165,84 @@
         </div>
     </div>
 
-    <!-- Document Preview/Actions -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Document Actions</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- View/Download -->
-            <a href="{{ $document->file_url }}" target="_blank" class="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                <i class="fas fa-external-link-alt mr-2"></i>
-                View File
-            </a>
+    <!-- Document Preview Section -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Document Preview</h3>
+            <p class="text-sm text-gray-600">Preview and interact with your document</p>
+        </div>
+        
+        <div class="p-6">
+            <!-- Preview Container -->
+            <div class="mb-6">
+                <div id="document-preview" class="w-full bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 relative overflow-hidden" style="height: 400px;">
+                    @if(in_array(strtolower(pathinfo($document->file_name, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp']))
+                        <img src="{{ $document->file_url }}" alt="{{ $document->title }}" class="w-full h-full object-contain">
+                    @elseif(strtolower(pathinfo($document->file_name, PATHINFO_EXTENSION)) === 'pdf')
+                        <iframe src="{{ $document->file_url }}#toolbar=0&navpanes=0&scrollbar=1" class="w-full h-full border-0" title="{{ $document->title }}"></iframe>
+                    @else
+                        <div class="flex items-center justify-center h-full">
+                            <div class="text-center">
+                                <div class="p-4 rounded-full mb-4" style="background-color: {{ $document->category->color }}20;">
+                                    <i class="{{ $document->category->icon }} text-4xl" style="color: {{ $document->category->color }};"></i>
+                                </div>
+                                <h4 class="text-lg font-medium text-gray-900 mb-2">{{ $document->title }}</h4>
+                                <p class="text-sm text-gray-600 mb-4">Preview not available for this file type</p>
+                                <div class="space-y-2">
+                                    <a href="{{ $document->file_url }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                        <i class="fas fa-external-link-alt mr-2"></i>
+                                        Open File
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                    
+                    <!-- Preview Overlay Actions -->
+                    <div class="absolute top-4 right-4 flex space-x-2">
+                        <button onclick="expandPreview()" class="p-2 bg-white bg-opacity-90 rounded-full shadow-sm hover:bg-opacity-100 transition-all" title="Expand Preview">
+                            <i class="fas fa-expand text-gray-700"></i>
+                        </button>
+                        <a href="{{ $document->file_url }}" target="_blank" class="p-2 bg-white bg-opacity-90 rounded-full shadow-sm hover:bg-opacity-100 transition-all" title="Open in New Tab">
+                            <i class="fas fa-external-link-alt text-gray-700"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Preview Button -->
+                <button onclick="previewDocument({{ $document->id }})" class="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <i class="fas fa-eye mr-2"></i>
+                    Full Preview
+                </button>
 
-            <!-- Download -->
-            <a href="{{ route('documents.download', $document) }}" class="flex items-center justify-center px-4 py-3 border border-green-300 rounded-md text-sm font-medium text-green-700 hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                <i class="fas fa-download mr-2"></i>
-                Download
-            </a>
+                <!-- Download -->
+                <a href="{{ route('documents.download', $document) }}" class="flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                    <i class="fas fa-download mr-2"></i>
+                    Download
+                </a>
 
-            <!-- Print -->
-            @if($document->canBePrinted())
-                <form action="{{ route('documents.print', $document) }}" method="POST" class="contents">
-                    @csrf
-                    <button type="submit" class="flex items-center justify-center px-4 py-3 border border-purple-300 rounded-md text-sm font-medium text-purple-700 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                <!-- Print -->
+                @if($document->canBePrinted())
+                    <button onclick="printDocument({{ $document->id }})" class="flex items-center justify-center px-4 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors">
                         <i class="fas fa-print mr-2"></i>
                         Print Now
                     </button>
-                </form>
-            @else
-                <div class="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-md text-sm font-medium text-gray-400 bg-gray-50 cursor-not-allowed">
-                    <i class="fas fa-ban mr-2"></i>
-                    Cannot Print
-                </div>
-            @endif
+                @else
+                    <div class="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-md text-sm font-medium text-gray-400 bg-gray-50 cursor-not-allowed">
+                        <i class="fas fa-ban mr-2"></i>
+                        Cannot Print
+                    </div>
+                @endif
 
-            <!-- Edit -->
-            <a href="{{ route('documents.edit', $document) }}" class="flex items-center justify-center px-4 py-3 border border-indigo-300 rounded-md text-sm font-medium text-indigo-700 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                <i class="fas fa-edit mr-2"></i>
-                Edit Document
-            </a>
+                <!-- Edit -->
+                <a href="{{ route('documents.edit', $document) }}" class="flex items-center justify-center px-4 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    <i class="fas fa-edit mr-2"></i>
+                    Edit
+                </a>
+            </div>
         </div>
     </div>
 
@@ -225,3 +266,14 @@
     </div>
 </div>
 @endsection
+
+@include('components.document-preview-modal')
+
+@push('scripts')
+<script src="{{ asset('js/portal.js') }}"></script>
+<script>
+function expandPreview() {
+    previewDocument({{ $document->id }});
+}
+</script>
+@endpush

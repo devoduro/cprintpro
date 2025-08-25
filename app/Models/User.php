@@ -48,7 +48,7 @@ class User extends Authenticatable
         'role',
         'staff_id',
         'first_login',
-    
+        'profile_photo',
     ];
 
     /**
@@ -80,5 +80,29 @@ class User extends Authenticatable
     public function staff()
     {
         return $this->belongsTo(Staff::class);
+    }
+
+    /**
+     * Get the user's document print records.
+     */
+    public function documentPrints()
+    {
+        return $this->hasMany(UserDocumentPrint::class);
+    }
+
+    /**
+     * Get the total number of documents printed by this user.
+     */
+    public function getTotalPrintsAttribute()
+    {
+        return $this->documentPrints()->sum('print_count');
+    }
+
+    /**
+     * Get the number of unique documents printed by this user.
+     */
+    public function getUniquePrintedDocumentsAttribute()
+    {
+        return $this->documentPrints()->count();
     }
 }

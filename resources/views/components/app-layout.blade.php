@@ -91,27 +91,64 @@
                 </a>
                   
                 
-                <a href="{{ route('users.index') }}" class="flex items-center gap-3 px-4 py-3 text-gray-600 transition-all duration-200 hover:bg-primary-50 hover:text-primary-600 rounded-lg {{ request()->routeIs('users.*') ? 'bg-primary-50 text-primary-600 font-medium' : '' }}">
+                @if(auth()->user()->role === 'admin')
+                <a href="{{ route('users.index') }}" class="flex items-center gap-3 px-4 py-3 text-gray-600 transition-all duration-200 hover:bg-primary-50 hover:text-primary-600 rounded-lg {{ request()->routeIs('users.*') && !request()->routeIs('users.portal*') ? 'bg-primary-50 text-primary-600 font-medium' : '' }}">
                     <i class="fas fa-users-cog w-5"></i>
                     <span>User Management</span>
                 </a>
+                @endif
 
+                @if(auth()->user()->role === 'admin')
                 <a href="{{ route('document-categories.index') }}" class="flex items-center gap-3 px-4 py-3 text-gray-600 transition-all duration-200 hover:bg-primary-50 hover:text-primary-600 rounded-lg {{ request()->routeIs('document-categories.*') ? 'bg-primary-50 text-primary-600 font-medium' : '' }}">
                     <i class="fas fa-folder w-5"></i>
                     <span>Document Categories</span>
                 </a>
+                @endif
 
+                @if(auth()->user()->role === 'admin')
                 <a href="{{ route('documents.index') }}" class="flex items-center gap-3 px-4 py-3 text-gray-600 transition-all duration-200 hover:bg-primary-50 hover:text-primary-600 rounded-lg {{ request()->routeIs('documents.*') ? 'bg-primary-50 text-primary-600 font-medium' : '' }}">
                     <i class="fas fa-file-alt w-5"></i>
                     <span>Documents</span>
                 </a>
+                @else
+                <a href="{{ route('users.portal') }}" class="flex items-center gap-3 px-4 py-3 text-gray-600 transition-all duration-200 hover:bg-primary-50 hover:text-primary-600 rounded-lg {{ request()->routeIs('users.portal*') && !request()->has('category') ? 'bg-primary-50 text-primary-600 font-medium' : '' }}">
+                    <i class="fas fa-file-alt w-5"></i>
+                    <span>All Documents</span>
+                </a>
+
+                <!-- Categories for Staff Users (Read-only) -->
+                @php
+                    $rootCategories = \App\Models\DocumentCategory::with(['children.children', 'activeDocuments'])
+                        ->withCount(['activeDocuments'])
+                        ->whereNull('parent_id')
+                        ->where('is_active', true)
+                        ->ordered()
+                        ->get();
+                @endphp
+
+                @if($rootCategories->count() > 0)
+                <div class="mt-4 mb-2">
+                    <div class="px-4 py-2">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Categories</h3>
+                    </div>
+                </div>
+
+                <div x-data="{ openFolders: {} }">
+                    @foreach($rootCategories as $category)
+                        @include('components.category-menu-item', ['category' => $category, 'level' => 0])
+                    @endforeach
+                </div>
+                @endif
+                @endif
                 
+                @if(auth()->user()->role === 'admin')
                 <a href="{{ route('settings.index') }}" class="flex items-center gap-3 px-4 py-3 text-gray-600 transition-all duration-200 hover:bg-primary-50 hover:text-primary-600 rounded-lg {{ request()->routeIs('settings.*') ? 'bg-primary-50 text-primary-600 font-medium' : '' }}">
                     <i class="fas fa-cog w-5"></i>
                     <span>Settings</span>
                 </a>
+                @endif
                 
-                @if (auth()->user()->role === 'admin')`
+                @if (auth()->user()->role === 'admin')
                 <a href="{{ route('activity-logs.index') }}" class="flex items-center gap-3 px-4 py-3 text-gray-600 transition-all duration-200 hover:bg-primary-50 hover:text-primary-600 rounded-lg {{ request()->routeIs('activity-logs.*') ? 'bg-primary-50 text-primary-600 font-medium' : '' }}">
                     <i class="fas fa-history w-5"></i>
                     <span>Activity Logs</span>
@@ -292,6 +329,66 @@
             </footer>
         </div>
     </div>
+    
+    <!-- Portal JavaScript -->
+    <script>
+        // Global CSRF token setup
+        window.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        // Global notification function
+        window.showNotification = function(message, type = 'info') {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => notification.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = `notification fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full max-w-sm`;
+            
+            const colors = {
+                success: 'bg-green-500 text-white',
+                error: 'bg-red-500 text-white',
+                warning: 'bg-yellow-500 text-white',
+                info: 'bg-blue-500 text-white'
+            };
+            
+            const icons = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+            
+            notification.className += ` ${colors[type] || colors.info}`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="${icons[type] || icons.info} mr-3"></i>
+                    <span class="flex-1">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-3 text-white hover:text-gray-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.classList.add('translate-x-full');
+                    setTimeout(() => {
+                        if (notification.parentElement) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        };
+    </script>
     
     @stack('scripts')
 </body>

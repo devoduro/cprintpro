@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Document;
 use App\Models\DocumentCategory;
+use App\Models\UserDocumentPrint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -14,7 +15,8 @@ class DocumentController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('admin');
+        // Only apply admin middleware to certain methods
+        $this->middleware('admin')->except(['view', 'download', 'print', 'preview']);
     }
 
     /**
@@ -189,11 +191,49 @@ class DocumentController extends Controller
      */
     public function print(Document $document)
     {
-        if (!$document->canBePrinted()) {
-            return redirect()->back()->with('error', 'Document cannot be printed.');
+        // Check if document is active
+        if (!$document->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Document not found or not available.'
+            ], 404);
         }
 
+        if (!$document->canBePrinted()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Document cannot be printed.'
+            ], 403);
+        }
+
+        $user = Auth::user();
+        
+        // Update or create user-specific print record
+        $userPrint = UserDocumentPrint::firstOrCreate(
+            [
+                'user_id' => $user->id,
+                'document_id' => $document->id
+            ],
+            [
+                'print_count' => 0,
+                'last_printed_at' => null
+            ]
+        );
+        
+        $userPrint->incrementPrintCount();
+        
+        // Also increment the global document print count
         $document->incrementPrintCount();
+
+        // Return JSON response for AJAX requests
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Document sent to printer successfully.',
+                'user_print_count' => $userPrint->print_count,
+                'total_print_count' => $document->print_count
+            ]);
+        }
 
         // Return a print view that opens the document in a new window for printing
         return view('documents.print', compact('document'));
@@ -212,5 +252,69 @@ class DocumentController extends Controller
         
         return redirect()->back()
             ->with('success', "Document {$status} successfully.");
+    }
+
+    /**
+     * View document (for all authenticated users)
+     */
+    public function view(Document $document)
+    {
+        // Check if document is active
+        if (!$document->is_active) {
+            abort(404, 'Document not found or not available.');
+        }
+
+        $document->load(['category', 'uploader']);
+        return view('documents.show', compact('document'));
+    }
+
+    /**
+     * Get document preview data for AJAX requests
+     */
+    public function preview(Document $document)
+    {
+        // Check if document is active
+        if (!$document->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Document not found or not available.'
+            ], 404);
+        }
+
+        $document->load(['category', 'uploader']);
+        
+        // Get file extension
+        $fileExtension = strtolower(pathinfo($document->file_name, PATHINFO_EXTENSION));
+        
+        // Determine if preview is available
+        $previewableTypes = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'txt', 'md', 'csv'];
+        $hasPreview = in_array($fileExtension, $previewableTypes);
+        
+        return response()->json([
+            'success' => true,
+            'document' => [
+                'id' => $document->id,
+                'title' => $document->title,
+                'file_name' => $document->file_name,
+                'file_url' => $document->file_url,
+                'file_size_formatted' => $document->file_size_formatted,
+                'file_type' => $document->file_type,
+                'can_be_printed' => $document->canBePrinted(),
+                'has_preview' => $hasPreview,
+                'preview_url' => $hasPreview ? $document->file_url : null,
+                'category' => [
+                    'id' => $document->category->id,
+                    'name' => $document->category->name,
+                    'color' => $document->category->color,
+                    'icon' => $document->category->icon
+                ],
+                'uploader' => [
+                    'name' => $document->uploader->name,
+                    'email' => $document->uploader->email
+                ],
+                'created_at' => $document->created_at->toISOString(),
+                'print_count' => $document->print_count
+            ]
+        ]);
     }
 }

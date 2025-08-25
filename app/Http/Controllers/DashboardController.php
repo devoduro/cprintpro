@@ -18,7 +18,7 @@ class DashboardController extends Controller
      */
     public function __construct()
     {
-        $this->middleware(['auth', 'admin']);
+        $this->middleware('auth');
     }
     /**
      * Display the dashboard with key metrics and analytics.
@@ -28,6 +28,12 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
+        // Check user role and redirect accordingly
+        if (auth()->user()->role === User::ROLE_STAFF) {
+            return redirect()->route('users.portal');
+        }
+        
+        // Admin dashboard logic below
         // Get basic user metrics
         $totalUsers = User::count();
         $lastMonthUsers = User::where('created_at', '<', Carbon::now()->subMonth())->count();

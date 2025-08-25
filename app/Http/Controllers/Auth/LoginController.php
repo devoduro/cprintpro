@@ -29,10 +29,10 @@ class LoginController extends Controller
     protected function redirectTo()
     {
         if (Auth::user()->role === \App\Models\User::ROLE_ADMIN) {
-            return '/admin/dashboard';
+            return '/dashboard';
         }
         
-        return '/student/dashboard';
+        return '/portal';
     }
 
     /**
@@ -112,18 +112,11 @@ class LoginController extends Controller
      */
     protected function attemptLogin(Request $request)
     {
-        // Only allow admin users to log in through this form
+        // Allow both admin and staff users to log in through this form
         $credentials = $request->only('email', 'password');
-        $user = \App\Models\User::where('email', $credentials['email'])->first();
-        
-        if ($user && $user->role === \App\Models\User::ROLE_STAFF) {
-            throw ValidationException::withMessages([
-                'email' => ['Please use the student login form to access your account.'],
-            ]);
-        }
         
         return Auth::attempt(
-            array_merge($credentials, ['role' => \App\Models\User::ROLE_ADMIN]),
+            $credentials,
             $request->boolean('remember')
         );
     }
@@ -142,7 +135,8 @@ class LoginController extends Controller
         $request->session()->put('last_activity', time());
         
         // Log successful login
-        app(ActivityLogger::class)->log('login', 'Admin logged in successfully');
+        $userRole = Auth::user()->role === \App\Models\User::ROLE_ADMIN ? 'Admin' : 'User';
+        app(ActivityLogger::class)->log('login', $userRole . ' logged in successfully');
 
         return redirect()->intended($this->redirectTo());
     }

@@ -59,9 +59,10 @@
                                 @endif
 
                                 <div class="flex items-center justify-end mt-6">
-                                    <x-button href="{{ route('users.edit', $user) }}" icon="fas fa-edit">
+                                    <a href="{{ route('profile.edit') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                        <i class="fas fa-edit mr-2"></i>
                                         {{ __('Edit Profile') }}
-                                    </x-button>
+                                    </a>
                                 </div>
                             </div>
                         </div>

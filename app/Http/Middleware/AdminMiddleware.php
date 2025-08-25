@@ -33,9 +33,9 @@ class AdminMiddleware
                 'url' => $request->fullUrl()
             ]);
             
-            // If student tries to access admin area, redirect to student dashboard
-            if ($user->role === User::ROLE_STUDENT) {
-                return redirect()->route('student.dashboard')
+            // If staff tries to access admin area, redirect to portal
+            if ($user->role === User::ROLE_STAFF) {
+                return redirect()->route('users.portal')
                     ->with('error', 'Access denied. This area is restricted to administrators only.');
             }
             
