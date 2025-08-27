@@ -1,5 +1,21 @@
 @extends('components.app-layout')
 
+@push('styles')
+<style>
+.view-toggle {
+    color: #6b7280;
+}
+.view-toggle.active {
+    background-color: #3b82f6;
+    color: white;
+}
+.view-toggle:hover:not(.active) {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+</style>
+@endpush
+
 @push('scripts')
 <script>
 console.log('Portal JavaScript loading...');
@@ -302,6 +318,26 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
+// View switching function
+function switchView(viewType) {
+    const gridView = document.getElementById('grid-view');
+    const listView = document.getElementById('list-view');
+    const gridBtn = document.getElementById('grid-view-btn');
+    const listBtn = document.getElementById('list-view-btn');
+    
+    if (viewType === 'grid') {
+        gridView.style.display = 'grid';
+        listView.style.display = 'none';
+        gridBtn.classList.add('active');
+        listBtn.classList.remove('active');
+    } else {
+        gridView.style.display = 'none';
+        listView.style.display = 'block';
+        listBtn.classList.add('active');
+        gridBtn.classList.remove('active');
+    }
+}
+
 // Make functions available globally - CRITICAL for button functionality
 console.log('Assigning functions to window object...');
 window.closePreview = closePreview;
@@ -317,6 +353,7 @@ window.updateZoom = updateZoom;
 window.toggleImageZoom = toggleImageZoom;
 window.previewDocument = previewDocument;
 window.renderPreview = renderPreview;
+window.switchView = switchView;
 
 // Make variables globally accessible
 Object.defineProperty(window, 'currentDocument', {
@@ -846,11 +883,11 @@ console.log('window.downloadFromPreview:', typeof window.downloadFromPreview);
             <div class="flex items-center space-x-4">
                 <span class="text-sm font-medium text-gray-700">View:</span>
                 <div class="flex bg-gray-100 rounded-lg p-1">
-                    <button onclick="switchView('grid')" id="grid-view-btn" class="px-3 py-1 rounded-md text-sm font-medium transition-colors view-toggle active">
+                    <button onclick="switchView('grid')" id="grid-view-btn" class="px-3 py-1 rounded-md text-sm font-medium transition-colors view-toggle">
                         <i class="fas fa-th-large mr-1"></i>
                         Grid
                     </button>
-                    <button onclick="switchView('list')" id="list-view-btn" class="px-3 py-1 rounded-md text-sm font-medium transition-colors view-toggle">
+                    <button onclick="switchView('list')" id="list-view-btn" class="px-3 py-1 rounded-md text-sm font-medium transition-colors view-toggle active">
                         <i class="fas fa-list mr-1"></i>
                         List
                     </button>
@@ -867,7 +904,7 @@ console.log('window.downloadFromPreview:', typeof window.downloadFromPreview);
         <div id="documents-container">
             @if($documents->count() > 0)
                 <!-- Grid View -->
-                <div id="grid-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div id="grid-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" style="display: none;">
                     @foreach($documents as $document)
                         <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-gray-200 transform hover:-translate-y-2 document-card overflow-hidden">
                             <!-- Enhanced Document Thumbnail/Icon -->
@@ -974,7 +1011,7 @@ console.log('window.downloadFromPreview:', typeof window.downloadFromPreview);
                 </div>
 
                 <!-- List View -->
-                <div id="list-view" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" style="display: none;">
+                <div id="list-view" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">

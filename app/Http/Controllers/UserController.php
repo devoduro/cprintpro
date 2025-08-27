@@ -334,8 +334,8 @@ class UserController extends Controller
             $query->where('file_type', request('file_type'));
         }
         
-        // Get documents with pagination
-        $documents = $query->latest()->paginate(12);
+        // Get documents with pagination - sorted alphabetically by title
+        $documents = $query->orderBy('title', 'asc')->paginate(12);
         
         // Get categories for filter dropdown
         $categories = \App\Models\DocumentCategory::where('is_active', true)
