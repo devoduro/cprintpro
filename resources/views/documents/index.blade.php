@@ -10,10 +10,14 @@
             <h1 class="text-2xl font-bold text-gray-900">Documents</h1>
             <p class="mt-1 text-sm text-gray-600">Manage and print your documents</p>
         </div>
-        <div class="mt-4 sm:mt-0">
+        <div class="mt-4 sm:mt-0 flex space-x-3">
             <a href="{{ route('documents.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:border-blue-800 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                 <i class="fas fa-plus mr-2"></i>
                 Upload Document
+            </a>
+            <a href="{{ route('documents.bulk.create') }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-800 focus:outline-none focus:border-green-800 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150">
+                <i class="fas fa-upload mr-2"></i>
+                Bulk Upload
             </a>
         </div>
     </div>

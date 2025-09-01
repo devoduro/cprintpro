@@ -894,9 +894,16 @@ console.log('window.downloadFromPreview:', typeof window.downloadFromPreview);
                 </div>
             </div>
             
-            <div class="text-sm text-gray-600">
-                Showing {{ $documents->count() }} of {{ $documents->total() }} documents
-                <span class="text-gray-400 ml-2">(Read-only access)</span>
+            <div class="flex items-center space-x-4">
+                <div class="text-sm text-gray-600">
+                    Showing {{ $documents->count() }} of {{ $documents->total() }} documents
+                    <span class="text-gray-400 ml-2">(Read-only access)</span>
+                </div>
+                <a href="{{ route('users.portal.bulk-upload') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm">
+                    <i class="fas fa-upload mr-2"></i>
+                    Upload Documents
+                </a>
             </div>
         </div>
 

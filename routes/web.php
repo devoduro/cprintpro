@@ -61,6 +61,8 @@ Route::middleware(['auth'])->group(function () {
     // User Portal Routes
     Route::get('/portal', [UserController::class, 'portal'])->name('users.portal');
     Route::get('/portal/documents', [UserController::class, 'portalDocuments'])->name('users.portal.documents');
+    Route::get('/portal/bulk-upload', [UserController::class, 'bulkUploadForm'])->name('users.portal.bulk-upload');
+    Route::post('/portal/bulk-upload', [UserController::class, 'bulkUploadStore'])->name('users.portal.bulk-upload.store');
     
     // Document Access Routes (for all authenticated users)
     Route::get('/documents/{document}/view', [DocumentController::class, 'view'])->name('documents.view');
@@ -90,6 +92,8 @@ Route::middleware(['auth'])->group(function () {
 
         // Documents Management (Admin Only)
         Route::resource('documents', DocumentController::class);
+        Route::get('/documents/bulk/create', [DocumentController::class, 'bulkCreate'])->name('documents.bulk.create');
+        Route::post('/documents/bulk/store', [DocumentController::class, 'bulkStore'])->name('documents.bulk.store');
         Route::patch('/documents/{document}/toggle-status', [DocumentController::class, 'toggleStatus'])->name('documents.toggle-status');
         
         // Settings

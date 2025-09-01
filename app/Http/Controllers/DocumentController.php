@@ -101,6 +101,98 @@ class DocumentController extends Controller
     }
 
     /**
+     * Show the form for bulk document upload
+     */
+    public function bulkCreate(Request $request)
+    {
+        $categoryId = $request->get('category');
+        $selectedCategory = $categoryId ? DocumentCategory::findOrFail($categoryId) : null;
+        $categories = DocumentCategory::active()->ordered()->get();
+        
+        return view('documents.bulk-create', compact('categories', 'selectedCategory'));
+    }
+
+    /**
+     * Store multiple documents in bulk
+     */
+    public function bulkStore(Request $request)
+    {
+        $validated = $request->validate([
+            'document_category_id' => 'required|exists:document_categories,id',
+            'files' => 'required|array|min:1',
+            'files.*' => 'file|mimes:pdf,doc,docx,txt,jpg,jpeg,png|max:10240', // 10MB max per file
+            'is_printable' => 'boolean',
+            'is_active' => 'boolean'
+        ]);
+
+        $uploadedFiles = [];
+        $errors = [];
+        $successCount = 0;
+        $totalFiles = count($request->file('files'));
+
+        foreach ($request->file('files') as $index => $file) {
+            try {
+                // Generate unique filename
+                $fileName = time() . '_' . $index . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs('documents', $fileName, 'public');
+
+                // Create document record
+                $document = Document::create([
+                    'title' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+                    'description' => 'Bulk uploaded document',
+                    'document_category_id' => $validated['document_category_id'],
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $filePath,
+                    'file_type' => $file->getClientMimeType(),
+                    'file_size' => $file->getSize(),
+                    'uploaded_by' => Auth::id(),
+                    'is_printable' => $request->has('is_printable'),
+                    'is_active' => $request->has('is_active')
+                ]);
+
+                $uploadedFiles[] = [
+                    'name' => $file->getClientOriginalName(),
+                    'id' => $document->id,
+                    'status' => 'success'
+                ];
+                $successCount++;
+
+            } catch (\Exception $e) {
+                $errors[] = [
+                    'name' => $file->getClientOriginalName(),
+                    'error' => $e->getMessage(),
+                    'status' => 'error'
+                ];
+            }
+        }
+
+        // Return JSON response for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => $successCount > 0,
+                'message' => "Successfully uploaded {$successCount} of {$totalFiles} documents.",
+                'uploaded_files' => $uploadedFiles,
+                'errors' => $errors,
+                'success_count' => $successCount,
+                'total_count' => $totalFiles
+            ]);
+        }
+
+        // Regular form submission
+        $message = "Successfully uploaded {$successCount} of {$totalFiles} documents.";
+        if (count($errors) > 0) {
+            $message .= " " . count($errors) . " files failed to upload.";
+        }
+
+        return redirect()->route('documents.index')
+            ->with('success', $message)
+            ->with('bulk_upload_results', [
+                'uploaded_files' => $uploadedFiles,
+                'errors' => $errors
+            ]);
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(Document $document)

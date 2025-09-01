@@ -422,4 +422,94 @@ class UserController extends Controller
         
         return redirect()->route('users.portal');
     }
+
+    /**
+     * Show bulk upload form for users
+     */
+    public function bulkUploadForm(Request $request)
+    {
+        $categoryId = $request->get('category');
+        $selectedCategory = $categoryId ? \App\Models\DocumentCategory::findOrFail($categoryId) : null;
+        $categories = \App\Models\DocumentCategory::active()->ordered()->get();
+        
+        return view('users.bulk-upload', compact('categories', 'selectedCategory'));
+    }
+
+    /**
+     * Store bulk uploaded documents from users
+     */
+    public function bulkUploadStore(Request $request)
+    {
+        $validated = $request->validate([
+            'document_category_id' => 'required|exists:document_categories,id',
+            'files' => 'required|array|min:1',
+            'files.*' => 'file|mimes:pdf,doc,docx,txt,jpg,jpeg,png|max:10240', // 10MB max per file
+        ]);
+
+        $uploadedFiles = [];
+        $errors = [];
+        $successCount = 0;
+        $totalFiles = count($request->file('files'));
+
+        foreach ($request->file('files') as $index => $file) {
+            try {
+                // Generate unique filename
+                $fileName = time() . '_' . $index . '_' . \Illuminate\Support\Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs('documents', $fileName, 'public');
+
+                // Create document record
+                $document = \App\Models\Document::create([
+                    'title' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+                    'description' => 'User bulk uploaded document',
+                    'document_category_id' => $validated['document_category_id'],
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $filePath,
+                    'file_type' => $file->getClientMimeType(),
+                    'file_size' => $file->getSize(),
+                    'uploaded_by' => Auth::id(),
+                    'is_printable' => true, // Default to printable for user uploads
+                    'is_active' => false // Require admin approval
+                ]);
+
+                $uploadedFiles[] = [
+                    'name' => $file->getClientOriginalName(),
+                    'id' => $document->id,
+                    'status' => 'success'
+                ];
+                $successCount++;
+
+            } catch (\Exception $e) {
+                $errors[] = [
+                    'name' => $file->getClientOriginalName(),
+                    'error' => $e->getMessage(),
+                    'status' => 'error'
+                ];
+            }
+        }
+
+        // Return JSON response for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => $successCount > 0,
+                'message' => "Successfully uploaded {$successCount} of {$totalFiles} documents. Documents are pending admin approval.",
+                'uploaded_files' => $uploadedFiles,
+                'errors' => $errors,
+                'success_count' => $successCount,
+                'total_count' => $totalFiles
+            ]);
+        }
+
+        // Regular form submission
+        $message = "Successfully uploaded {$successCount} of {$totalFiles} documents. Documents are pending admin approval.";
+        if (count($errors) > 0) {
+            $message .= " " . count($errors) . " files failed to upload.";
+        }
+
+        return redirect()->route('users.portal')
+            ->with('success', $message)
+            ->with('bulk_upload_results', [
+                'uploaded_files' => $uploadedFiles,
+                'errors' => $errors
+            ]);
+    }
 }
