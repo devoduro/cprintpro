@@ -68,6 +68,10 @@
                     <i class="fas fa-file-plus mr-2"></i>
                     Add Document
                 </a>
+                <a href="{{ route('documents.bulk.create', ['category' => $parent->id]) }}" class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                    <i class="fas fa-upload mr-2"></i>
+                    Bulk Upload
+                </a>
             @else
                 <a href="{{ route('document-categories.create', ['type' => 'category']) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <i class="fas fa-plus mr-2"></i>
@@ -147,6 +151,10 @@
                                 <span class="hidden sm:inline">View</span>
                             </a>
                         @endif
+                        <a href="{{ route('documents.bulk.create', ['category' => $category->id]) }}" class="inline-flex items-center text-purple-600 hover:text-purple-700 text-sm font-medium">
+                            <i class="fas fa-upload mr-1"></i>
+                            <span class="hidden sm:inline">Bulk Upload</span>
+                        </a>
                         <a href="{{ route('document-categories.edit', $category) }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-700 text-sm font-medium">
                             <i class="fas fa-edit mr-1"></i>
                             <span class="hidden sm:inline">Edit</span>
@@ -323,10 +331,16 @@
                 <i class="fas fa-file-alt text-4xl text-gray-400 mb-4"></i>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">No documents yet</h3>
                 <p class="text-gray-600 mb-4">This {{ $parent->isFolder() ? 'folder' : 'category' }} doesn't have any documents yet.</p>
-                <a href="{{ route('documents.create', ['category' => $parent->id]) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
-                    <i class="fas fa-plus mr-2"></i>
-                    Add First Document
-                </a>
+                <div class="flex space-x-3">
+                    <a href="{{ route('documents.create', ['category' => $parent->id]) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+                        <i class="fas fa-plus mr-2"></i>
+                        Add Document
+                    </a>
+                    <a href="{{ route('documents.bulk.create', ['category' => $parent->id]) }}" class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700">
+                        <i class="fas fa-upload mr-2"></i>
+                        Bulk Upload
+                    </a>
+                </div>
             </div>
         </div>
     @endif
