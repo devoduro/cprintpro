@@ -58,7 +58,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
     Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
     
-    // User Portal Routes
+    // User Dashboard and Portal Routes
+    Route::get('/user/dashboard', [UserController::class, 'dashboard'])->name('users.dashboard');
     Route::get('/portal', [UserController::class, 'portal'])->name('users.portal');
     Route::get('/portal/documents', [UserController::class, 'portalDocuments'])->name('users.portal.documents');
     Route::get('/portal/bulk-upload', [UserController::class, 'bulkUploadForm'])->name('users.portal.bulk-upload');

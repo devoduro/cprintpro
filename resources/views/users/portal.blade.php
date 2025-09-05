@@ -649,147 +649,8 @@ console.log('window.downloadFromPreview:', typeof window.downloadFromPreview);
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-    <!-- Enhanced Header Section -->
-    <div class="relative overflow-hidden">
-        <!-- Background Pattern -->
-        <div class="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 opacity-90"></div>
-        <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
-        
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="py-12">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-6">
-                        <!-- Enhanced User Avatar -->
-                        <div class="relative">
-                            @if(auth()->user()->avatar)
-                                <img class="h-16 w-16 rounded-full ring-4 ring-white shadow-lg" src="{{ auth()->user()->avatar }}" alt="{{ auth()->user()->name }}">
-                            @else
-                                <div class="h-16 w-16 rounded-full bg-white bg-opacity-20 backdrop-blur-sm ring-4 ring-white shadow-lg flex items-center justify-center">
-                                    <span class="text-white font-bold text-xl">{{ substr(auth()->user()->name, 0, 1) }}</span>
-                                </div>
-                            @endif
-                            <div class="absolute -bottom-1 -right-1 h-6 w-6 bg-green-400 rounded-full ring-2 ring-white flex items-center justify-center">
-                                <i class="fas fa-check text-white text-xs"></i>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <h1 class="text-4xl font-bold text-white mb-2">Welcome back, {{ auth()->user()->name }}!</h1>
-                            <p class="text-blue-100 text-lg">Explore, preview, and print documents with ease</p>
-                            <div class="flex items-center mt-3 space-x-4 text-blue-100">
-                                <div class="flex items-center">
-                                    <i class="fas fa-calendar-alt mr-2"></i>
-                                    <span class="text-sm">{{ now()->format('l, F j, Y') }}</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i class="fas fa-clock mr-2"></i>
-                                    <span class="text-sm">{{ now()->format('g:i A') }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Quick Actions -->
-                    <div class="hidden lg:flex items-center space-x-3">
-                        <button class="bg-white bg-opacity-20 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition-all duration-200 flex items-center">
-                            <i class="fas fa-search mr-2"></i>
-                            Quick Search
-                        </button>
-                        <button class="bg-white bg-opacity-20 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-opacity-30 transition-all duration-200 flex items-center">
-                            <i class="fas fa-filter mr-2"></i>
-                            Filters
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
+   
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- My Total Prints -->
-            <div class="group bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-blue-200 hover:border-blue-300 transform hover:-translate-y-1">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <div class="p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg group-hover:shadow-xl transition-all duration-300">
-                            <i class="fas fa-print text-2xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-semibold text-blue-700 uppercase tracking-wide">My Total Prints</p>
-                            <p class="text-3xl font-bold text-blue-900 mt-1">{{ number_format($userStats['total_prints']) }}</p>
-                            <p class="text-xs text-blue-600 mt-1">Documents printed by you</p>
-                        </div>
-                    </div>
-                    <div class="text-blue-400 opacity-20 group-hover:opacity-40 transition-opacity duration-300">
-                        <i class="fas fa-chart-line text-3xl"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- My Unique Documents -->
-            <div class="group bg-gradient-to-br from-emerald-50 to-green-100 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-emerald-200 hover:border-emerald-300 transform hover:-translate-y-1">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <div class="p-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg group-hover:shadow-xl transition-all duration-300">
-                            <i class="fas fa-file-check text-2xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-semibold text-emerald-700 uppercase tracking-wide">Documents Printed</p>
-                            <p class="text-3xl font-bold text-emerald-900 mt-1">{{ number_format($userStats['unique_documents_printed']) }}</p>
-                            <p class="text-xs text-emerald-600 mt-1">Unique documents</p>
-                        </div>
-                    </div>
-                    <div class="text-emerald-400 opacity-20 group-hover:opacity-40 transition-opacity duration-300">
-                        <i class="fas fa-layer-group text-3xl"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Available Documents -->
-            <div class="group bg-gradient-to-br from-purple-50 to-violet-100 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-purple-200 hover:border-purple-300 transform hover:-translate-y-1">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <div class="p-4 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-lg group-hover:shadow-xl transition-all duration-300">
-                            <i class="fas fa-folder-open text-2xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-semibold text-purple-700 uppercase tracking-wide">Available Documents</p>
-                            <p class="text-3xl font-bold text-purple-900 mt-1">{{ $stats['total_documents'] }}</p>
-                            <p class="text-xs text-purple-600 mt-1">Ready to view/print</p>
-                        </div>
-                    </div>
-                    <div class="text-purple-400 opacity-20 group-hover:opacity-40 transition-opacity duration-300">
-                        <i class="fas fa-database text-3xl"></i>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Last Print Activity -->
-            <div class="group bg-gradient-to-br from-amber-50 to-orange-100 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-amber-200 hover:border-amber-300 transform hover:-translate-y-1">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <div class="p-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg group-hover:shadow-xl transition-all duration-300">
-                            <i class="fas fa-history text-2xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-semibold text-amber-700 uppercase tracking-wide">Last Print</p>
-                            <p class="text-2xl font-bold text-amber-900 mt-1">
-                                @if($userStats['last_print'])
-                                    {{ $userStats['last_print']->diffForHumans() }}
-                                @else
-                                    <span class="text-lg">Never</span>
-                                @endif
-                            </p>
-                            <p class="text-xs text-amber-600 mt-1">Your last activity</p>
-                        </div>
-                    </div>
-                    <div class="text-amber-400 opacity-20 group-hover:opacity-40 transition-opacity duration-300">
-                        <i class="fas fa-clock text-3xl"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Enhanced Search and Filter Bar -->
         <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 mb-8 hover:shadow-2xl transition-all duration-300">
@@ -899,11 +760,7 @@ console.log('window.downloadFromPreview:', typeof window.downloadFromPreview);
                     Showing {{ $documents->count() }} of {{ $documents->total() }} documents
                     <span class="text-gray-400 ml-2">(Read-only access)</span>
                 </div>
-                <a href="{{ route('users.portal.bulk-upload') }}" 
-                   class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm">
-                    <i class="fas fa-upload mr-2"></i>
-                    Upload Documents
-                </a>
+                 
             </div>
         </div>
 
@@ -948,17 +805,21 @@ console.log('window.downloadFromPreview:', typeof window.downloadFromPreview);
                                 <!-- Enhanced Quick Actions Overlay -->
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-4">
                                     <div class="flex space-x-3 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                                        <button onclick="previewDocument({{ $document->id }})" class="p-3 bg-white/90 backdrop-blur-sm rounded-full text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-110" title="Preview">
-                                            <i class="fas fa-eye text-lg"></i>
-                                        </button>
+                                        @if($document->canBePrinted())
+                                            <form action="{{ route('documents.print', $document) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="p-3 bg-white/90 backdrop-blur-sm rounded-full text-gray-700 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-110" title="Print Document">
+                                                    <i class="fas fa-print text-lg"></i>
+                                                </button>
+                                            </form>
+                                        @else
+                                            <a href="{{ route('documents.view', $document) }}" target="_blank" class="p-3 bg-white/90 backdrop-blur-sm rounded-full text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-110" title="View Document">
+                                                <i class="fas fa-eye text-lg"></i>
+                                            </a>
+                                        @endif
                                         <a href="{{ route('documents.download', $document) }}" class="p-3 bg-white/90 backdrop-blur-sm rounded-full text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-110" title="Download">
                                             <i class="fas fa-download text-lg"></i>
                                         </a>
-                                        @if($document->canBePrinted())
-                                            <button onclick="printDocument({{ $document->id }})" class="p-3 bg-white/90 backdrop-blur-sm rounded-full text-gray-700 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-110" title="Print">
-                                                <i class="fas fa-print text-lg"></i>
-                                            </button>
-                                        @endif
                                     </div>
                                 </div>
                                 
@@ -984,32 +845,25 @@ console.log('window.downloadFromPreview:', typeof window.downloadFromPreview);
                                     </span>
                                 </div>
                                 
-                                <!-- Document Title - More Prominent -->
-                                <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2 leading-tight" title="{{ $document->title }}">
-                                    {{ $document->title }}
-                                </h3>
+                             
                                 
-                                <!-- File Name - Secondary Info -->
-                                <p class="text-sm text-gray-600 mb-3 truncate flex items-center" title="{{ $document->file_name }}">
-                                    <i class="fas fa-file mr-2 text-gray-400"></i>
-                                    {{ $document->file_name }}
-                                </p>
-                                
-                                <div class="flex items-center justify-between text-xs text-gray-500">
-                                    <span>{{ $document->file_size_formatted }}</span>
-                                    <span>{{ $document->print_count }} prints</span>
-                                </div>
+                           
                                 
                                 <!-- Action Buttons -->
                                 <div class="mt-4 flex space-x-2">
-                                    <button onclick="previewDocument({{ $document->id }})" class="flex-1 px-3 py-2 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors">
-                                        <i class="fas fa-eye mr-1"></i>
-                                        Preview
-                                    </button>
                                     @if($document->canBePrinted())
-                                        <button onclick="printDocument({{ $document->id }})" class="px-3 py-2 bg-purple-600 text-white text-xs rounded-md hover:bg-purple-700 transition-colors">
-                                            <i class="fas fa-print"></i>
-                                        </button>
+                                        <form action="{{ route('documents.print', $document) }}" method="POST" class="flex-1">
+                                            @csrf
+                                            <button type="submit" class="w-full px-3 py-2 bg-purple-600 text-white text-xs rounded-md hover:bg-purple-700 transition-colors">
+                                                <i class="fas fa-print mr-1"></i>
+                                                Print
+                                            </button>
+                                        </form>
+                                    @else
+                                        <a href="{{ route('documents.view', $document) }}" target="_blank" class="flex-1 px-3 py-2 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors text-center inline-block">
+                                            <i class="fas fa-eye mr-1"></i>
+                                            View
+                                        </a>
                                     @endif
                                 </div>
                             </div>
@@ -1025,9 +879,7 @@ console.log('window.downloadFromPreview:', typeof window.downloadFromPreview);
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Document</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prints</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                
                                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
@@ -1056,28 +908,24 @@ console.log('window.downloadFromPreview:', typeof window.downloadFromPreview);
                                                 {{ $document->category->name }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $document->file_size_formatted }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $document->print_count }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($document->is_active)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
-                                            @else
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Inactive</span>
-                                            @endif
-                                        </td>
+                                         
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div class="flex justify-end space-x-2">
-                                                <button onclick="previewDocument({{ $document->id }})" class="text-blue-600 hover:text-blue-900" title="Preview">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
+                                                @if($document->canBePrinted())
+                                                    <form action="{{ route('documents.print', $document) }}" method="POST" class="inline">
+                                                        @csrf
+                                                        <button type="submit" class="text-purple-600 hover:text-purple-900" title="Print Document">
+                                                            <i class="fas fa-print"></i>
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <a href="{{ route('documents.view', $document) }}" target="_blank" class="text-blue-600 hover:text-blue-900" title="View Document">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                @endif
                                                 <a href="{{ route('documents.download', $document) }}" class="text-green-600 hover:text-green-900" title="Download">
                                                     <i class="fas fa-download"></i>
                                                 </a>
-                                                @if($document->canBePrinted())
-                                                    <button onclick="printDocument({{ $document->id }})" class="text-purple-600 hover:text-purple-900" title="Print">
-                                                        <i class="fas fa-print"></i>
-                                                    </button>
-                                                @endif
                                             </div>
                                         </td>
                                     </tr>

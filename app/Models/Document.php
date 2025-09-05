@@ -91,4 +91,12 @@ class Document extends Model
     {
         return $this->is_active && $this->is_printable;
     }
+
+    /**
+     * Get the user document print records for this document.
+     */
+    public function userDocumentPrints()
+    {
+        return $this->hasMany(UserDocumentPrint::class);
+    }
 }

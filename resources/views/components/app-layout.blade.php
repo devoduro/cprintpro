@@ -85,10 +85,13 @@
             
             <!-- Navigation -->
             <nav class="p-4 space-y-1">
+                
+                @if(auth()->user()->role === 'admin')
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-3 text-gray-600 transition-all duration-200 hover:bg-primary-50 hover:text-primary-600 rounded-lg {{ request()->routeIs('dashboard') ? 'bg-primary-50 text-primary-600 font-medium' : '' }}">
                     <i class="fas fa-tachometer-alt w-5"></i>
                     <span>Dashboard</span>
                 </a>
+                @endif
                   
                 
                 @if(auth()->user()->role === 'admin')
@@ -111,6 +114,11 @@
                     <span>Documents</span>
                 </a>
                 @else
+                <a href="{{ route('users.dashboard') }}" class="flex items-center gap-3 px-4 py-3 text-gray-600 transition-all duration-200 hover:bg-primary-50 hover:text-primary-600 rounded-lg {{ request()->routeIs('users.dashboard') ? 'bg-primary-50 text-primary-600 font-medium' : '' }}">
+                    <i class="fas fa-chart-bar w-5"></i>
+                    <span>My Dashboard</span>
+                </a>
+
                 <a href="{{ route('users.portal') }}" class="flex items-center gap-3 px-4 py-3 text-gray-600 transition-all duration-200 hover:bg-primary-50 hover:text-primary-600 rounded-lg {{ request()->routeIs('users.portal*') && !request()->has('category') ? 'bg-primary-50 text-primary-600 font-medium' : '' }}">
                     <i class="fas fa-file-alt w-5"></i>
                     <span>All Documents</span>

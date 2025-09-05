@@ -304,6 +304,38 @@ class UserController extends Controller
     }
 
     /**
+     * Display the user dashboard with statistics.
+     */
+    public function dashboard()
+    {
+        $user = Auth::user();
+        
+        // Get user-specific statistics
+        $userStats = [
+            'total_prints' => $user->total_prints ?? 0,
+            'unique_documents_printed' => $user->unique_printed_documents ?? 0,
+            'last_print' => $user->documentPrints()->latest('last_printed_at')->first()?->last_printed_at ?? null
+        ];
+            
+        // Get general statistics
+        $stats = [
+            'total_documents' => \App\Models\Document::where('is_active', true)->count(),
+            'categories_count' => \App\Models\DocumentCategory::where('is_active', true)->count()
+        ];
+        
+        // Get recent documents that user has printed
+        $recentDocuments = \App\Models\Document::whereHas('userDocumentPrints', function($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })
+        ->with(['category'])
+        ->orderBy('updated_at', 'desc')
+        ->take(6)
+        ->get();
+        
+        return view('users.dashboard', compact('stats', 'userStats', 'recentDocuments'));
+    }
+
+    /**
      * Display the user portal with documents.
      */
     public function portal(Request $request)

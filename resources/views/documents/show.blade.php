@@ -96,74 +96,8 @@
                 </div>
             </div>
         </div>
-
-        <!-- File Information -->
-        <div class="mt-6 pt-6 border-t border-gray-200">
-            <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">File Information</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div>
-                    <div class="text-sm text-gray-500">File Name</div>
-                    <div class="text-sm font-medium text-gray-900 break-all">{{ $document->file_name }}</div>
-                </div>
-                <div>
-                    <div class="text-sm text-gray-500">File Size</div>
-                    <div class="text-sm font-medium text-gray-900">{{ $document->file_size_formatted }}</div>
-                </div>
-                <div>
-                    <div class="text-sm text-gray-500">File Type</div>
-                    <div class="text-sm font-medium text-gray-900">{{ strtoupper(pathinfo($document->file_name, PATHINFO_EXTENSION)) }}</div>
-                </div>
-                <div>
-                    <div class="text-sm text-gray-500">MIME Type</div>
-                    <div class="text-sm font-medium text-gray-900">{{ $document->file_type }}</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Print Statistics -->
-        <div class="mt-6 pt-6 border-t border-gray-200">
-            <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">Print Statistics</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-purple-600">{{ $document->print_count }}</div>
-                    <div class="text-sm text-gray-500">Total Prints</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-blue-600">
-                        @if($document->last_printed_at)
-                            {{ $document->last_printed_at->diffForHumans() }}
-                        @else
-                            Never
-                        @endif
-                    </div>
-                    <div class="text-sm text-gray-500">Last Printed</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold {{ $document->canBePrinted() ? 'text-green-600' : 'text-red-600' }}">
-                        {{ $document->canBePrinted() ? 'Yes' : 'No' }}
-                    </div>
-                    <div class="text-sm text-gray-500">Can Print</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Upload Information -->
-        <div class="mt-6 pt-6 border-t border-gray-200">
-            <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">Upload Information</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <div class="text-sm text-gray-500">Uploaded By</div>
-                    <div class="text-sm font-medium text-gray-900">{{ $document->uploader->name }}</div>
-                    <div class="text-xs text-gray-500">{{ $document->uploader->email }}</div>
-                </div>
-                <div>
-                    <div class="text-sm text-gray-500">Upload Date</div>
-                    <div class="text-sm font-medium text-gray-900">{{ $document->created_at->format('F j, Y \a\t g:i A') }}</div>
-                    <div class="text-xs text-gray-500">{{ $document->created_at->diffForHumans() }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
+ 
+ 
 
     <!-- Document Preview Section -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">

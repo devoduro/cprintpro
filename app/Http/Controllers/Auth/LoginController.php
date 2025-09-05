@@ -32,7 +32,7 @@ class LoginController extends Controller
             return '/dashboard';
         }
         
-        return '/portal';
+        return '/user/dashboard';
     }
 
     /**
