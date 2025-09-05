@@ -179,12 +179,7 @@
             @endif
         </div>
 
-        <div class="print-actions">
-            <p style="color: #666; font-size: 14px; margin: 0;">
-                <i class="fas fa-info-circle"></i>
-                Use your browser's print function (Ctrl+P) or click the Print button above.
-            </p>
-        </div>
+        
     </div>
 
     <script>
