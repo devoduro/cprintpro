@@ -117,22 +117,11 @@
 </head>
 <body>
     <div class="print-container">
-        <div class="document-header">
-            <h1 class="document-title">{{ $document->title }}</h1>
-            <div class="document-info">
-                <p><strong>File:</strong> {{ $document->file_name }}</p>
-                <p><strong>Category:</strong> {{ $document->category->name }}</p>
-                <p><strong>Print Count:</strong> {{ $document->print_count }}</p>
-                <p><strong>Printed:</strong> {{ now()->format('F j, Y \a\t g:i A') }}</p>
-            </div>
-        </div>
+      
 
         <div class="print-actions">
           
-            <a href="{{ $document->file_url }}" target="_blank" class="btn btn-primary">
-                <i class="fas fa-external-link-alt"></i>
-                Open in New Tab
-            </a>
+            
             <a href="{{ route('documents.show', $document) }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i>
                 Back to Document

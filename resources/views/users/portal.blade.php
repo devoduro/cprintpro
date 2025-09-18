@@ -806,7 +806,7 @@ console.log('window.downloadFromPreview:', typeof window.downloadFromPreview);
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-4">
                                     <div class="flex space-x-3 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                                         @if($document->canBePrinted())
-                                            <form action="{{ route('documents.print', $document) }}" method="POST" class="inline">
+                                            <form action="{{ route('documents.print', $document) }}" method="POST" target="_blank" class="inline">
                                                 @csrf
                                                 <button type="submit" class="p-3 bg-white/90 backdrop-blur-sm rounded-full text-gray-700 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-110" title="Print Document">
                                                     <i class="fas fa-print text-lg"></i>
@@ -852,7 +852,7 @@ console.log('window.downloadFromPreview:', typeof window.downloadFromPreview);
                                 <!-- Action Buttons -->
                                 <div class="mt-4 flex space-x-2">
                                     @if($document->canBePrinted())
-                                        <form action="{{ route('documents.print', $document) }}" method="POST" class="flex-1">
+                                        <form action="{{ route('documents.print', $document) }}" method="POST" target="_blank" class="flex-1">
                                             @csrf
                                             <button type="submit" class="w-full px-3 py-2 bg-purple-600 text-white text-xs rounded-md hover:bg-purple-700 transition-colors">
                                                 <i class="fas fa-print mr-1"></i>
@@ -912,7 +912,7 @@ console.log('window.downloadFromPreview:', typeof window.downloadFromPreview);
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div class="flex justify-end space-x-2">
                                                 @if($document->canBePrinted())
-                                                    <form action="{{ route('documents.print', $document) }}" method="POST" class="inline">
+                                                    <form action="{{ route('documents.print', $document) }}" method="POST" target="_blank" class="inline">
                                                         @csrf
                                                         <button type="submit" class="text-purple-600 hover:text-purple-900" title="Print Document">
                                                             <i class="fas fa-print"></i>
